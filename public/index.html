@@ -70,3 +70,83 @@
     @media (max-width:520px){.card{padding:20px}.header{gap:10px}.logo{width:48px;height:48px}}
   </style>
 </head>
+<body>
+  <main class="card" style="position:relative;">
+    <div class="header">
+      <div class="logo">API</div>
+      <div>
+        <h1>API Key Generator</h1>
+        <p class="lead">Tekan tombol untuk membuat API key baru. Key akan muncul di area teks — salin saat diperlukan.</p>
+      </div>
+    </div>
+
+    <textarea id="output" readonly placeholder="API key akan muncul di sini setelah tombol ditekan"></textarea>
+
+    <div class="controls">
+      <button id="genBtn" class="btn">Buat API Key</button>
+      <div id="loading" style="color:rgba(230,238,248,0.7);font-size:13px;display:none;">
+        <strong>Loading...</strong>
+      </div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="meta">
+      <div>Keamanan: <em>random & secure</em></div>
+      <div id="hint">Klik tombol lalu tekan <strong>Ctrl+C</strong> untuk menyalin.</div>
+    </div>
+  </main>
+
+  <script>
+    const btn = document.getElementById('genBtn');
+    const out = document.getElementById('output');
+    const statusEl = document.getElementById('status');
+    const loadingEl = document.getElementById('loading');
+
+    btn.addEventListener('click', async () => {
+      try {
+        btn.disabled = true;
+        loadingEl.style.display = 'block';
+        statusEl.className = 'status';
+        statusEl.textContent = '';
+
+        // Kirim request ke endpoint /create
+        const response = await fetch('/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          out.value = data.apiKey;
+          out.focus();
+          out.select();
+
+          // Salin otomatis
+          navigator.clipboard?.writeText(data.apiKey).catch(() => {});
+
+          statusEl.className = 'status success';
+          statusEl.textContent = `✓ ${data.message} - Dibuat: ${new Date(data.createdAt).toLocaleString('id-ID')}`;
+
+          // Umpan balik pada tombol
+          const prev = btn.textContent;
+          btn.textContent = 'Berhasil! ✓';
+          setTimeout(() => btn.textContent = prev, 1800);
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = `✗ ${data.message}`;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = `✗ Error: ${error.message}`;
+      } finally {
+        btn.disabled = false;
+        loadingEl.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
