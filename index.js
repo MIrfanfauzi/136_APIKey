@@ -67,3 +67,39 @@ app.post('/create', (req, res) => {
     });
   }
 });
+
+// 5️⃣ Endpoint untuk verifikasi API Key (ambil dari database)
+app.post('/verify', (req, res) => {
+  const { apiKey } = req.body;
+
+  if (!apiKey) {
+    return res.status(400).json({
+      success: false,
+      message: 'API Key tidak ditemukan dalam request'
+    });
+  }
+
+  const sql = 'SELECT * FROM apikeys WHERE key_value = ? LIMIT 1';
+  db.query(sql, [apiKey], (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Gagal memeriksa API Key',
+        error: err.message
+      });
+    }
+
+    if (rows.length > 0) {
+      res.json({
+        success: true,
+        message: 'API Key valid',
+        data: rows[0]
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        message: 'API Key tidak valid'
+      });
+    }
+  });
+});
