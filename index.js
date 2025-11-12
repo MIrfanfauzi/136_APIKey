@@ -103,3 +103,23 @@ app.post('/verify', (req, res) => {
     }
   });
 });
+
+
+// 6️⃣ Endpoint untuk melihat semua API Keys
+app.get('/keys', (req, res) => {
+  const sql = 'SELECT * FROM apikeys ORDER BY created_at DESC';
+  db.query(sql, (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Gagal mengambil data API Keys',
+        error: err.message
+      });
+    }
+    res.json({
+      success: true,
+      totalKeys: rows.length,
+      keys: rows
+    });
+  });
+});
