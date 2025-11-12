@@ -22,3 +22,11 @@ db.connect(err => {
     console.log('✅ Terhubung ke MySQL');
   }
 });
+// 2️⃣ Middleware
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
+// 3️⃣ Route utama
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
